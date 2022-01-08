@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Default Local Group
+  m_EditorClassIdentifier: 
+  m_GroupName: Default Local Group
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 6b6c66c462cb3764f987d3e8d38f8934
+  m_SerializeEntries:
+  - m_GUID: e44a982b0f7b4ea4b821c79fa861c50e
+    m_Address: ObstacleStone
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 964045f43aed11841a9a7388fff809b3
+    m_Address: FarmerDefault
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: b001bbcda55e6a94b9e89c570a59bd95
+    m_Address: FarmerAggro
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 2503232054fd2d346b7c51704fb7fa7a
+    m_Address: FarmerDirty
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 38f62bf3b1dd0c7409f64dd04f5143bf
+    m_Address: DogDefault
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 21b6b2ec226e1134d9fc6b3d5386288b
+    m_Address: DogAggro
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 93e0f159330808840b92753f6dc62125
+    m_Address: DogDirty
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 2da5c3fc95f346c4d926eedf1f16b4ed
+    m_Address: PigDefault
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 92abb06dbf7224a4d88df4aaeb323c20
+    m_Address: DogPrefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 397530714b8bb7046a08a1f29f94bdb9
+    m_Address: FarmerPrefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 1ccd61b7ee2a70c4381e47e54e4899b0
+    m_Address: PlayerPrefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 5d1c6ab1e50504b41bad7327a8b92360, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 78217a8992c77414f86384128286683a, type: 2}
+    - {fileID: 11400000, guid: c72b7449bf36e1f44b7b5cefa2c08e4f, type: 2}
