@@ -24,7 +24,7 @@ namespace Core
             _renderer.transform
                 .DOScale(0, _duration)
                 .SetEase(Ease.OutCubic)
-                .SetLoops(5, LoopType.Restart);
+                .SetLoops(3, LoopType.Restart);
             
             _renderer
                 .DOFade(0, _duration)

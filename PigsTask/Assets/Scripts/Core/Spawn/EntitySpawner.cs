@@ -27,6 +27,7 @@ namespace Core.Spawn
             {EntityType.Player, AssetAddress.PlayerPrefab},
             {EntityType.Farmer, AssetAddress.FarmerPrefab},
             {EntityType.Dog, AssetAddress.DogPrefab},
+            {EntityType.Bomb, AssetAddress.BombPrefab},
             {EntityType.Eat, AssetAddress.EatPrefab},
         };
 
@@ -35,7 +36,6 @@ namespace Core.Spawn
         private Transform _spawnContainer;
         private EntityType[] _enemiesTypes;
         private EntityType[] _eatTypes;
-        private EntityType _playerType;
 
         public EntityType Type => _type;
 
@@ -47,7 +47,17 @@ namespace Core.Spawn
 
             _enemiesTypes = new[] {EntityType.Farmer, EntityType.Dog};
             _eatTypes = new[] {EntityType.Eat};
-            _playerType = EntityType.Player;
+        }
+        
+        public void Initialize(IAssetProvider assetProvider, Transform spawnContainer, EntityType entityType)
+        {
+            _spawnContainer = spawnContainer;
+            _assetProvider = assetProvider;
+            _type = entityType;
+            _gridCell = GetComponent<GridCell>();
+
+            _enemiesTypes = new[] {EntityType.Farmer, EntityType.Dog};
+            _eatTypes = new[] {EntityType.Eat};
         }
 
         public async Task<GameObject> Spawn()
@@ -63,6 +73,9 @@ namespace Core.Spawn
             
             if (_type == EntityType.Player)
                 _gridCell.HasPlayer = true;
+
+            if (_type == EntityType.Bomb)
+                _gridCell.HasBomb = true;
 
             return await _assetProvider.Instantiate(address, worldPosition, _spawnContainer);;
         }

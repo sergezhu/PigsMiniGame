@@ -40,7 +40,7 @@ namespace Core.Move
                 return;
 
             var desiredDistance = WalkDistance;
-            _moveController.Move(desiredDistance, _speed);
+            _moveController.Move(desiredDistance, _speed, false);
         }
 
         public void TryStartRelax()
@@ -50,6 +50,9 @@ namespace Core.Move
 
             StartCoroutine(Relax(RelaxDuration));
         }
+
+        public void Stop() => 
+            _moveController.Stop();
 
         private IEnumerator Relax(float relaxDuration)
         {

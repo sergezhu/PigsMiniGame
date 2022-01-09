@@ -37,5 +37,8 @@ namespace Core
         
         public void DisableCells() => 
             _cells.ForEach(data => data.Cell.Disable());
+
+        public void UpdateCellsView() => 
+            _cells.ForEach(data => data.Cell.UpdateView());
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Core
 {
-    public class AggroZone : MonoBehaviour, ITickable
+    public class AggroZone : MonoBehaviour
     {
         [SerializeField][Min(1)]
         private int _startAggroDistance;
@@ -24,7 +24,7 @@ namespace Core
         }
 
 
-        public void Tick()
+        public void DoUpdate()
         {
             var distance = DistanceProvider.GetDistanceFromEnemy(_enemyMover);
 

@@ -40,8 +40,14 @@ namespace Core.View
 
         public void EnableDefaultView()
         {
+            _spriteRenderer.color = Color.white;
         }
-        
+
+        public void EnableDirtyView()
+        {
+            _spriteRenderer.color = Color.yellow;
+        }
+
         public void SetDirection(MoveDirection direction)
         {
             _currentView.SetDirection(direction);

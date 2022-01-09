@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Core.Infrastructure.AssetManagement;
 using Core.InputControl;
 using Core.Move;
+using Core.SO;
 using Core.View;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -21,19 +22,28 @@ namespace Core.Spawn
         private Grid _grid;
         private Player _player;
         private List<Enemy> _enemies;
+        private List<IExplosionHandler> _explosionHandlers;
+        private List<IEarnScoresProvider> _earnScoresProviders;
         private IAssetProvider _assetProvider;
         private InputController _inputController;
         private AStar _pathFinder;
+        private EarnScoresSettings _earnScoresSettings;
 
         public Player Player => _player;
         public IEnumerable<Enemy> Enemies => _enemies;
+        public IEnumerable<IExplosionHandler> ExplosionHandlers => _explosionHandlers;
+        public IEnumerable<IEarnScoresProvider> EarnScoresProviders => _earnScoresProviders;
 
-        public void Initialize(Grid grid, IAssetProvider assetProvider, AStar pathFinder, InputController inputController)
+        public void Initialize(Grid grid, IAssetProvider assetProvider, AStar pathFinder, InputController inputController, EarnScoresSettings earnScoresSettings)
         {
-            _inputController = inputController;
             _grid = grid;
+            _inputController = inputController;
             _assetProvider = assetProvider;
             _pathFinder = pathFinder;
+            _earnScoresSettings = earnScoresSettings;
+
+            _explosionHandlers = new List<IExplosionHandler>();
+            _earnScoresProviders = new List<IEarnScoresProvider>();
 
             FillSpawnRecords();
         }
@@ -57,27 +67,17 @@ namespace Core.Spawn
                 var enemy = spawnTask.Result.GetComponent<Enemy>();
 
                 var moveController = new MoveController(record.Cell.Coords, GetRandomDirection(), enemy.transform, _pathFinder, record.Spawner.Type);
-                await enemy.Initialize(moveController, _assetProvider);
+                var scores = _earnScoresSettings.EntityTypeScores.First(settings => settings.EntityType == record.Spawner.Type).EarnScores;
+                await enemy.Initialize(moveController, _assetProvider, _pathFinder, scores);
                 
                 _enemies.Add(enemy);
+                
+                if(enemy is IExplosionHandler handler)
+                    _explosionHandlers.Add(handler);
+                
+                if(enemy is IEarnScoresProvider earnScoresProvider)
+                    _earnScoresProviders.Add(earnScoresProvider);
             }
-            
-            /*_spawnersRecords
-                .Where(record => types.Contains(record.Spawner.Type))
-                .ToList()
-                .ForEach(async record =>
-                {
-                    record.Spawner.Initialize(_assetProvider, _spawnContainer);
-
-                    var spawnTask = record.Spawner.Spawn();
-                    await spawnTask;
-
-                    var moveController = new MoveController(record.Cell.Coords, GetRandomDirection(), _pathFinder);
-
-                    var enemy = spawnTask.Result.GetComponent<Enemy>();
-                    await enemy.Initialize(moveController, _assetProvider, record.Cell.Y + 1);
-                    enemy.SetDirection(GetRandomDirection());
-                });*/
         }
 
         public async Task SpawnPlayer()
@@ -100,9 +100,40 @@ namespace Core.Spawn
 
             var player = spawnTask.Result.GetComponent<Player>();
             var moveController = new MoveController(spawnCellRecord.Cell.Coords, MoveDirection.Right, player.transform, _pathFinder, spawnCellRecord.Spawner.Type);
-            await player.Initialize(moveController, _inputController, _assetProvider, spawnCellRecord.Cell.Y + 1);
+            await player.Initialize(moveController, _inputController, _assetProvider, spawnCellRecord.Cell.Y + 1, this, _pathFinder);
 
             _player = player;
+            
+            if(_player is IExplosionHandler handler)
+                _explosionHandlers.Add(handler);
+        }
+
+        public async Task SpawnBomb(GridCell targetBombCell)
+        {
+            var spawner = targetBombCell.gameObject.AddComponent<EntitySpawner>();
+            spawner.Initialize(_assetProvider, _spawnContainer, EntitySpawner.EntityType.Bomb);
+
+            var spawnTask = spawner.Spawn();
+            await spawnTask;
+
+            var bomb = spawnTask.Result.GetComponent<Bomb>();
+            bomb.Initialize(targetBombCell, _pathFinder);
+
+            SubscribeOnExplosionEvent(bomb);
+            
+            if(bomb is IExplosionHandler handler)
+                _explosionHandlers.Add(handler);
+        }
+
+        private void SubscribeOnExplosionEvent(Bomb bomb) => 
+            bomb.Explosion += OnBombExplosion;
+
+        private void OnBombExplosion(Bomb bomb)
+        {
+            bomb.Explosion -= OnBombExplosion;
+
+            _explosionHandlers.Remove(bomb);
+            _explosionHandlers.ForEach(handler => handler.HandleExplosion(bomb.Cell, bomb.Distance));
         }
 
         public void LateInitialize()

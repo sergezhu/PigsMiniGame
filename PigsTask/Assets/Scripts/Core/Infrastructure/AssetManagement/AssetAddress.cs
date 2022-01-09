@@ -7,6 +7,7 @@ namespace Core.Infrastructure.AssetManagement
     public static string PlayerPrefab = "PlayerPrefab";
     public static string FarmerPrefab = "FarmerPrefab";
     public static string DogPrefab = "DogPrefab";
+    public static string BombPrefab = "BombPrefab";
     public static string EatPrefab = "";
 
     // Sprites

@@ -29,8 +29,10 @@ namespace Core.Move
             if (IsMoving)
                 return;
 
-            _targetCell.AnimateMarker();
-            _moveController.Move(_targetCell.Coords, _speed);
+            _moveController.Move(_targetCell.Coords, _speed, true);
         }
+
+        public void Stop() => 
+            _moveController.Stop();
     }
 }

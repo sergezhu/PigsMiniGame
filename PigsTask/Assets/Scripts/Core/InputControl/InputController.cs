@@ -28,7 +28,7 @@ namespace Core.InputControl
 
             if (hitCollider.TryGetComponent(out GridCell cell))
             {
-                Debug.Log($"hit on cell {cell.Coords.AsVector()}");
+                //Debug.Log($"hit on cell {cell.Coords.AsVector()}");
                 CellClick?.Invoke(cell);
             }
         }

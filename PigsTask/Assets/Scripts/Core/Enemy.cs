@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.Infrastructure.AssetManagement;
 using Core.Move;
@@ -9,7 +8,7 @@ using UnityEngine;
 
 namespace Core
 {
-    public class Enemy : MonoBehaviour
+    public class Enemy : MonoBehaviour, IExplosionHandler, IEarnScoresProvider
     {
         public enum EnemyState
         {
@@ -20,6 +19,10 @@ namespace Core
             Attack
         }
 
+        public event Action<int> EarnScoresReady;
+
+        public const float DirtyStunDuration = 5f;
+        
         [SerializeField]
         private EnemyView _view;
         [SerializeField]
@@ -27,20 +30,23 @@ namespace Core
         [SerializeField]
         private AggroZone _aggroZone;
 
-        private bool _lockedState;
-        
         private DistanceProvider _distanceProvider;
-        private List<WaitForSeconds> _cachedWaiters;
         private MoveController _moveController;
+        private Coroutine _dirtyStunCoroutine;
+        private AStar _pathFinder;
+        private int _earnScores;
+        private bool _isStunned;
 
         public EnemyMover EnemyMover => _enemyMover;
         public EnemyState CurrentState { get; private set; }
-        
 
-        public async Task Initialize(MoveController moveController, IAssetProvider assetProvider)
+
+        public async Task Initialize(MoveController moveController, IAssetProvider assetProvider, AStar pathFinder, int earnScores)
         {
             _moveController = moveController;
-            
+            _pathFinder = pathFinder;
+            _earnScores = earnScores;
+
             await _view.Initialize(assetProvider);
             UpdateView(moveController.CurrentDirection, moveController.CurrentPosition.Y + 1);
 
@@ -61,6 +67,23 @@ namespace Core
         public void DoUpdate()
         {
             HandleState();
+        }
+
+        public void HandleExplosion(GridCell cell, int distance)
+        {
+            _pathFinder.Initialize(cell.Coords.AsVector(), _moveController.CurrentPosition.AsVector(), AStar.AllowedDirectionsType.EightDirections);
+            var distanceBetweenCells = _pathFinder.GetPath().Count;
+
+            if (distanceBetweenCells < distance)
+                HandleExplosionInternal();
+        }
+        
+        private void HandleExplosionInternal()
+        {
+            EarnScoresReady?.Invoke(_earnScores);
+
+            _isStunned = true;
+            Debug.Log("Enemy under explosion effect");
         }
 
         private void OnDestroy()
@@ -102,6 +125,7 @@ namespace Core
                 case EnemyState.Chasing:
                     break;
                 case EnemyState.DirtyStun:
+                    HandleDirtyStun();
                     break;
                 case EnemyState.Attack:
                     break;
@@ -110,6 +134,9 @@ namespace Core
 
         private void HandleIdle()
         {
+            if(_isStunned)
+                CurrentState = EnemyState.DirtyStun;
+            
             if (_enemyMover.IsRelaxing)
                 return;
             
@@ -118,9 +145,15 @@ namespace Core
             if (_enemyMover.IsMoving)
                 CurrentState = EnemyState.Walk;
         }
-        
+
         private void HandleWalk()
         {
+            if (_isStunned)
+            {
+                _enemyMover.Stop();
+                CurrentState = EnemyState.DirtyStun;
+            }
+            
             if (_enemyMover.IsMoving)
                 return;
             
@@ -128,6 +161,28 @@ namespace Core
 
             if (_enemyMover.IsRelaxing)
                 CurrentState = EnemyState.Idle;
+        }
+        
+        private void HandleDirtyStun()
+        {
+            if (_dirtyStunCoroutine == null)
+                _dirtyStunCoroutine = StartCoroutine(DirtyStunCoroutine(DirtyStunDuration));
+
+            if (_isStunned == false)
+            {
+                _dirtyStunCoroutine = null;
+                CurrentState = EnemyState.Walk;
+            }
+        }
+
+        private IEnumerator DirtyStunCoroutine(float duration)
+        {
+            _view.EnableDirtyView();
+            
+            yield return new WaitForSeconds(duration);
+            
+            _view.EnableDefaultView();
+            _isStunned = false;
         }
     }
 }

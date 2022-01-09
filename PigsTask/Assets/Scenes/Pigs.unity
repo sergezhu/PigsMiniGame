@@ -38366,6 +38366,7 @@ MonoBehaviour:
   _spawnController: {fileID: 1843135236}
   _uiController: {fileID: 166838238}
   _rayCaster: {fileID: 1099430734}
+  _earnScoresSettings: {fileID: 11400000, guid: 190aca7d624b8f445b6811a5bb4dab95, type: 2}
 --- !u!114 &1843135236
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -61,6 +61,10 @@ MonoBehaviour:
     m_Address: PlayerPrefab
     m_ReadOnly: 0
     m_SerializedLabels: []
+  - m_GUID: af324d3624d3b5142b80eb212b8d8537
+    m_Address: BombPrefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 5d1c6ab1e50504b41bad7327a8b92360, type: 2}
   m_SchemaSet:

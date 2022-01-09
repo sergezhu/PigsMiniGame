@@ -1,4 +1,5 @@
-﻿using Core;
+﻿using System.Collections.Generic;
+using Core;
 using UnityEngine;
 
 namespace UI
@@ -8,9 +9,9 @@ namespace UI
         [SerializeField]
         private BottomBar _bottomBar;
         
-        public void Initialize(IBombButtonClickHandler bombButtonClickHandler)
+        public void Initialize(IBombButtonClickHandler bombButtonClickHandler, IEnumerable<IEarnScoresProvider> spawnControllerEarnScoresProviders)
         {
-            _bottomBar.Initialize(bombButtonClickHandler);
+            _bottomBar.Initialize(bombButtonClickHandler, spawnControllerEarnScoresProviders);
         }
     }
 }

@@ -6,17 +6,17 @@ namespace Core.Move
     {
         private Action<GridCell> _cellMarkAction;
         private Action<GridCell> _cellUnmarkAction;
-        private Func<GridCell, bool> _checkCellMarkFunc;
+        private Func<GridCell, bool> _checkCellIfStopFunc;
 
-        public MoveEntityCallbacks(Action<GridCell> cellMarkAction, Action<GridCell> cellUnmarkAction, Func<GridCell, bool> checkCellMarkFunc)
+        public MoveEntityCallbacks(Action<GridCell> cellMarkAction, Action<GridCell> cellUnmarkAction, Func<GridCell, bool> checkCellIfStopFunc)
         {
             _cellMarkAction = cellMarkAction;
             _cellUnmarkAction = cellUnmarkAction;
-            _checkCellMarkFunc = checkCellMarkFunc;
+            _checkCellIfStopFunc = checkCellIfStopFunc;
         }
 
         public Action<GridCell> CellMarkAction => _cellMarkAction;
         public Action<GridCell> CellUnmarkAction => _cellUnmarkAction;
-        public Func<GridCell, bool> CheckCellMarkFunc => _checkCellMarkFunc;
+        public Func<GridCell, bool> CheckCellIfStopFunc => _checkCellIfStopFunc;
     }
 }

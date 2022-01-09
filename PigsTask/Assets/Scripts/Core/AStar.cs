@@ -128,12 +128,15 @@ namespace Core
         
         public GridCell ToCell(Vector2Int coords)
         {
-            var cell = _grid.GetCell(coords);
+            var cell = ToCellOrNull(coords);
             if (cell == null)
                 throw new InvalidOperationException("Invalid path point. Cell with this coords is not exist");
                 
             return cell;
         }
+        
+        public GridCell ToCellOrNull(Vector2Int coords) => 
+            _grid.GetCell(coords);
 
         private List<GridCell> FindNeighbors(Vector2Int parentCoords)
         {
