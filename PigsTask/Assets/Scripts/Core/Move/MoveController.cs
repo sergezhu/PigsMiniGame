@@ -16,8 +16,8 @@ namespace Core.Move
 
         private readonly AStar _pathFinder;
         private readonly Transform _targetTransform;
-        private readonly EntitySpawner.EntityType _spawnerType;
         private Dictionary<MoveDirection, Vector2Int> _directionsVectors;
+        private readonly MoveEntityCallbacks _moveCallbacks;
         private Sequence _sequence;
         private bool _needStopFlag;
         
@@ -28,39 +28,12 @@ namespace Core.Move
         public GridCell CurrentCell => _pathFinder.ToCell(CurrentPosition.AsVector());
         public GridCell PreviousCell => _pathFinder.ToCell(PreviousPosition.AsVector());
 
-
-        private static readonly Dictionary<EntitySpawner.EntityType, MoveEntityCallbacks> CellMoveCallbacks =
-            new Dictionary<EntitySpawner.EntityType, MoveEntityCallbacks>
-            {
-                {
-                    EntitySpawner.EntityType.Player, new MoveEntityCallbacks(
-                        cell => { cell.HasPlayer = true; },
-                        cell => { cell.HasPlayer = false; },
-                        cell => cell.HasEnemy || cell.HasBomb)
-                },
-
-                {
-                    EntitySpawner.EntityType.Farmer, new MoveEntityCallbacks(
-                        cell => { cell.HasEnemy = true; },
-                        cell => { cell.HasEnemy = false; },
-                        cell => cell.HasPlayer || cell.HasEnemy || cell.HasBomb)
-                },
-
-                {
-                    EntitySpawner.EntityType.Dog, new MoveEntityCallbacks(
-                        cell => { cell.HasEnemy = true; },
-                        cell => { cell.HasEnemy = false; },
-                        cell => cell.HasPlayer || cell.HasEnemy || cell.HasBomb)
-                },
-            };
-
-        public MoveController(CellCoords startCoords, MoveDirection startDirection, Transform targetTransform, AStar pathFinder,
-            EntitySpawner.EntityType spawnerType)
+        public MoveController(CellCoords startCoords, MoveDirection startDirection, Transform targetTransform, AStar pathFinder, MoveEntityCallbacks moveCallbacks)
         {
+            _moveCallbacks = moveCallbacks;
             _pathFinder = pathFinder;
 
             _targetTransform = targetTransform;
-            _spawnerType = spawnerType;
 
             CurrentDirection = startDirection;
             CurrentPosition = startCoords;
@@ -204,7 +177,7 @@ namespace Core.Move
                     if (index == -1)
                         throw new InvalidOperationException("Direction vector not found!");
 
-                    if (CellMoveCallbacks[_spawnerType].CheckCellIfStopFunc(newCell))
+                    if (_moveCallbacks.CheckCellIfStopFunc(newCell))
                     {
                         //Debug.Log(" ! next cell is busy ! Path interrupted. Enemy is waiting next try to walk");
                         _sequence.Kill();
@@ -214,7 +187,7 @@ namespace Core.Move
                     }
                     else
                     {
-                        CellMoveCallbacks[_spawnerType].CellMarkAction(newCell);
+                        _moveCallbacks.CellMarkAction(newCell);
 
                         CurrentDirection = _directionsVectors.Keys.ToList()[index];
                         Changed?.Invoke();
@@ -224,7 +197,7 @@ namespace Core.Move
                 _sequence.Append(_targetTransform.DOMove(worldPath[i], 1f / speed).SetEase(easing));
                 _sequence.AppendCallback(() =>
                 {
-                    CellMoveCallbacks[_spawnerType].CellUnmarkAction(previousCell);
+                    _moveCallbacks.CellUnmarkAction(previousCell);
 
                     PreviousPosition = CurrentPosition;
                     CurrentPosition = newCoords;
@@ -251,6 +224,20 @@ namespace Core.Move
             _needStopFlag = false;
 
             IsMoving = false;
+        }
+
+        public void CleanUp()
+        {
+            if (_sequence != null)
+            {
+                _sequence.Kill();
+                _sequence = null;
+            }
+            
+            IsMoving = false;
+            
+            _moveCallbacks.CellUnmarkAction(CurrentCell);
+            _moveCallbacks.CellUnmarkAction(PreviousCell);
         }
 
         private static Ease GetEasing(int i, int count)

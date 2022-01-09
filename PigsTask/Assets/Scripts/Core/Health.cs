@@ -5,7 +5,6 @@ namespace Core
 {
     public class Health : IDamageable
     {
-        public event Action Dead;
         public event Action Changed;
         
         private bool _isDead;
@@ -21,6 +20,7 @@ namespace Core
 
         public int CurrentHP => _currentHp;
         public int MaxHP => _maxHp;
+        public bool IsDead => _isDead;
 
 
         public void TakeDamage(int damageValue)
@@ -29,13 +29,11 @@ namespace Core
                 throw new InvalidOperationException("Damage value must be positive");
 
             _currentHp -= damageValue;
-            Changed?.Invoke();
+            _currentHp = _currentHp <= 0 ? 0 : _currentHp;
 
-            if (_currentHp <= 0)
-            {
-                _currentHp = 0;
-                Dead?.Invoke();
-            }
+            _isDead = _currentHp == 0;
+
+            Changed?.Invoke();
         }
     }
 }

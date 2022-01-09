@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.Infrastructure.AssetManagement;
 using Core.InputControl;
@@ -10,13 +12,16 @@ using UnityEngine;
 
 namespace Core
 {
-    public class Player : MonoBehaviour, IBombButtonClickHandler, IExplosionHandler
+    public class Player : MonoBehaviour, IBombButtonClickHandler, IExplosionHandler, IDamageableOwner
     {
+        public event Action Dead;
+        
         public enum PlayerState
         {
             Idle,
             Walk,
             DirtyStun,
+            Dead
         }
         
         public const float DirtyStunDuration = 1.5f;
@@ -75,12 +80,14 @@ namespace Core
         {
             _inputController.CellClick += OnCellClick;
             _moveController.Changed += OnMoveChanged;
+            _health.Changed += OnHealthChanged;
         }
 
         private void Unsubscribe()
         {
             _inputController.CellClick -= OnCellClick;
             _moveController.Changed -= OnMoveChanged;
+            _health.Changed -= OnHealthChanged;
         }
 
         public async void HandleBombButtonClick()
@@ -103,12 +110,15 @@ namespace Core
             if (distanceBetweenCells < distance)
                 HandleExplosionInternal();
         }
+        
+        public IEnumerable<IDamageable> GetAllDamageable()
+        {
+            return new List<IDamageable>(){Health};
+        }
 
         private void HandleExplosionInternal()
         {
             _isStunned = true;
-            
-            Debug.Log("Player under explosion effect");
         }
 
         private void OnCellClick(GridCell cell)
@@ -119,6 +129,11 @@ namespace Core
         private void OnMoveChanged()
         {
             UpdateView(_moveController.CurrentDirection, _moveController.CurrentPosition.Y + 1);
+        }
+        
+        private void OnHealthChanged()
+        {
+            _view.HandleTakeDamage();
         }
 
         private void UpdateView(MoveDirection moveDirection, int order)
@@ -140,11 +155,17 @@ namespace Core
                 case PlayerState.DirtyStun:
                     HandleDirtyStun();
                     break;
+                case PlayerState.Dead:
+                    HandleDead();
+                    break;
             }
         }
 
         private void HandleIdle()
         {
+            if (_health.IsDead) 
+                DeadEnter();
+            
             if (_isStunned)
                 CurrentState = PlayerState.DirtyStun;
             
@@ -154,6 +175,9 @@ namespace Core
 
         private void HandleWalk()
         {
+            if (_health.IsDead) 
+                DeadEnter();
+            
             if (_isStunned)
             {
                 _playerMover.Stop();
@@ -166,6 +190,9 @@ namespace Core
 
         private void HandleDirtyStun()
         {
+            if (_health.IsDead) 
+                DeadEnter();
+
             if (_dirtyStunCoroutine == null)
                 _dirtyStunCoroutine = StartCoroutine(DirtyStunCoroutine(DirtyStunDuration));
 
@@ -175,15 +202,32 @@ namespace Core
                 CurrentState = PlayerState.Idle;
             }
         }
-        
+
+        private void HandleDead()
+        {
+        }
+
         private IEnumerator DirtyStunCoroutine(float duration)
         {
             _view.EnableDirtyView();
+            Debug.Log("Player under explosion effect");
             
             yield return new WaitForSeconds(duration);
             
             _view.EnableDefaultView();
             _isStunned = false;
+        }
+
+        private void DeadEnter()
+        {
+            _playerMover.Stop();
+            _playerMover.CleanUp();
+            _view.HandleDead();
+            Unsubscribe();
+            
+            CurrentState = PlayerState.Dead;
+            
+            Dead?.Invoke();
         }
     }
 }

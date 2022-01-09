@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Core.View
 {
-    public abstract class EnemyView : MonoBehaviour, IDefaultView, IAggroView, IDirtyView
+    public abstract class EnemyView : MonoBehaviour
     {
         private IFourDirectionView _defaultView;
         private IFourDirectionView _aggroView;

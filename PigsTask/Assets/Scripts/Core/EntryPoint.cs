@@ -46,7 +46,7 @@ namespace Core
 
             _isUpdateReady = true;
             
-            _uiController.Initialize(_spawnController.Player, _spawnController.EarnScoresProviders, _spawnController.Player.Health);
+            _uiController.Initialize(_spawnController.Player, _spawnController.EarnScoresProviders, _spawnController.Player);
         }
 
         private void Update()
@@ -58,7 +58,8 @@ namespace Core
             _spawnController.Player.DoUpdate();
             _spawnController.Enemies.ToList().ForEach(e => e.DoUpdate());
 
-            _grid.UpdateCellsView();
+            // its for debugging cells in runtime
+            //_grid.UpdateCellsView();
         }
     }
 }

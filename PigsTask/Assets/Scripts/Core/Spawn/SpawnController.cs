@@ -64,9 +64,16 @@ namespace Core.Spawn
                 
                 await spawnTask;
                 var enemy = spawnTask.Result.GetComponent<Enemy>();
+                record.Cell.Enemy = enemy;
 
                 var pathFinder = new AStar(_grid);
-                var moveController = new MoveController(record.Cell.Coords, GetRandomDirection(), enemy.transform, pathFinder, record.Spawner.Type);
+
+                var callbacks = new MoveEntityCallbacks(
+                    cell => { cell.Enemy = enemy; },
+                    cell => { cell.Enemy = null; },
+                    cell => cell.Player != null || cell.Enemy != null || cell.Bomb != null);
+                
+                var moveController = new MoveController(record.Cell.Coords, GetRandomDirection(), enemy.transform, pathFinder, callbacks);
                 var scores = _earnScoresSettings.EntityTypeScores.First(settings => settings.EntityType == record.Spawner.Type).EarnScores;
                 await enemy.Initialize(moveController, _assetProvider, pathFinder, scores);
                 
@@ -99,8 +106,16 @@ namespace Core.Spawn
             await spawnTask;
 
             var player = spawnTask.Result.GetComponent<Player>();
+            spawnCellRecord.Cell.Player = player;
+            
             var pathFinder = new AStar(_grid);
-            var moveController = new MoveController(spawnCellRecord.Cell.Coords, MoveDirection.Right, player.transform, pathFinder, spawnCellRecord.Spawner.Type);
+
+            var callbacks = new MoveEntityCallbacks(
+                cell => { cell.Player = player; },
+                cell => { cell.Player = null; },
+                cell => cell.Enemy != null || cell.Bomb != null);
+            
+            var moveController = new MoveController(spawnCellRecord.Cell.Coords, MoveDirection.Right, player.transform, pathFinder, callbacks);
             await player.Initialize(moveController, _inputController, _assetProvider, spawnCellRecord.Cell.Y + 1, this, pathFinder, new Health(10));
 
             _player = player;
@@ -118,6 +133,8 @@ namespace Core.Spawn
             await spawnTask;
 
             var bomb = spawnTask.Result.GetComponent<Bomb>();
+            targetBombCell.Bomb = bomb;
+            
             var pathFinder = new AStar(_grid);
             bomb.Initialize(targetBombCell, pathFinder);
 
@@ -144,6 +161,7 @@ namespace Core.Spawn
             {
                 var pathFinder = new AStar(_grid);
                 e.CreateDistanceProvider(pathFinder, _player.PlayerMover);
+                e.DamageDealerInitialize(new List<IDamageable>(){_player.Health});
             });
         }
 

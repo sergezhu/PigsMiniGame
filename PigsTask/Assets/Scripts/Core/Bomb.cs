@@ -86,7 +86,7 @@ namespace Core
         private void OnTimerFinish()
         {
             transform.DOKill();
-            _cell.HasBomb = false;
+            _cell.Bomb = null;
             
             InstantiateExplosionPrefab();
             Explosion?.Invoke(this);

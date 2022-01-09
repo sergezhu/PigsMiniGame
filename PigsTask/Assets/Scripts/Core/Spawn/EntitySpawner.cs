@@ -68,15 +68,6 @@ namespace Core.Spawn
             if (_gridCell.IsObstacle)
                 throw new InvalidOperationException("You can not spawn on cell that is Obstacle");
 
-            if (_enemiesTypes.Contains(_type))
-                _gridCell.HasEnemy = true;
-            
-            if (_type == EntityType.Player)
-                _gridCell.HasPlayer = true;
-
-            if (_type == EntityType.Bomb)
-                _gridCell.HasBomb = true;
-
             return await _assetProvider.Instantiate(address, worldPosition, _spawnContainer);;
         }
     }

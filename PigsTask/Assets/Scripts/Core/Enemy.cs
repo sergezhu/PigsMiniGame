@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Core.Infrastructure.AssetManagement;
 using Core.Interfaces;
@@ -65,6 +67,11 @@ namespace Core
         {
             _distanceProvider = new DistanceProvider(pathFinder, playerMover);
             _aggroZone.DistanceProvider = _distanceProvider;
+        }
+
+        public void DamageDealerInitialize(List<IDamageable> damageables)
+        {
+            _damageDealer.Initialize(damageables);
         }
 
         public void DoUpdate()
@@ -133,6 +140,7 @@ namespace Core
                     HandleDirtyStun();
                     break;
                 case EnemyState.Attack:
+                    HandleAttack();
                     break;
             }
         }
@@ -212,6 +220,15 @@ namespace Core
                 CurrentState = EnemyState.DirtyStun;
                 return;
             }
+
+            if (_aggroZone.CanAttack)
+            {
+                _enemyMover.StopMove();
+                _damageDealer.Initialize(_aggroZone.DamageableInRange.ToList());
+                _damageDealer.StartDamage();
+                CurrentState = EnemyState.Attack;
+                return;
+            }
             
             if (_aggroZone.IsAggro == false)
             {
@@ -224,6 +241,23 @@ namespace Core
             {
                 _view.EnableAggroView();
                 TryStartChasingMove();
+            }
+        }
+
+        private void HandleAttack()
+        {
+            if (_isStunned)
+            {
+                _enemyMover.StopMove();
+                _damageDealer.StopDamage();
+                CurrentState = EnemyState.DirtyStun;
+                return;
+            }
+            
+            if (_aggroZone.CanAttack == false)
+            {
+                _damageDealer.StopDamage();
+                CurrentState = EnemyState.Chasing;
             }
         }
 

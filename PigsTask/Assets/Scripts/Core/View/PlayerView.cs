@@ -2,12 +2,13 @@
 using System.Threading.Tasks;
 using Core.Infrastructure.AssetManagement;
 using Core.Move;
+using DG.Tweening;
 using UnityEngine;
 
 namespace Core.View
 {
     [RequireComponent(typeof(SpriteRenderer))]
-    public class PlayerView : MonoBehaviour, IDefaultView, IDirtyView
+    public class PlayerView : MonoBehaviour
     {
         private IFourDirectionView _defaultView;
         private IFourDirectionView _currentView;
@@ -37,11 +38,6 @@ namespace Core.View
             };
         }
 
-        public Dictionary<MoveDirection, string> GetDirtyViewPictures()
-        {
-            throw new System.NotImplementedException();
-        }
-
         public void EnableDefaultView()
         {
             _spriteRenderer.color = Color.white;
@@ -60,6 +56,18 @@ namespace Core.View
         public void SetOrder(int order)
         {
             _spriteRenderer.sortingOrder = order;
+        }
+
+        public void HandleTakeDamage()
+        {
+            _spriteRenderer.color = Color.red;
+            _spriteRenderer.DOColor(Color.white, 0.4f).SetEase(Ease.InOutQuad);
+        }
+        
+        public void HandleDead()
+        {
+            _spriteRenderer.DOKill();
+            _spriteRenderer.color = Color.black;
         }
     }
 }

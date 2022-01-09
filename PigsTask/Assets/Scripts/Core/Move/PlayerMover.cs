@@ -12,10 +12,18 @@ namespace Core.Move
 
         public Vector2Int CurrentPosition => _moveController.CurrentPosition.AsVector();
         public bool IsMoving => _moveController.IsMoving;
+        public bool IsEnabled { get; private set; }
 
         public void Initialize(MoveController moveController)
         {
             _moveController = moveController;
+            IsEnabled = true;
+        }
+
+        public void CleanUp()
+        {
+            _moveController.CleanUp();
+            IsEnabled = false;
         }
 
         public void HandleCellClick(GridCell cell)

@@ -139,6 +139,14 @@ namespace Core
 
             return neighbors;
         }
+        
+        public List<GridCell> GetNonObstacleNeighbors(Vector2Int parentCoords)
+        {
+            var neighbors = FindNeighbors(parentCoords);
+            neighbors = neighbors.Where(cell => cell.IsObstacle == false).ToList();
+
+            return neighbors;
+        }
 
         private List<GridCell> FindNeighbors(Vector2Int parentCoords)
         {

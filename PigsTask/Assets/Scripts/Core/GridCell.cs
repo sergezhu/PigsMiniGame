@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Core.Interfaces;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
@@ -40,14 +41,24 @@ namespace Core
         public int F { get; set; }
 
         public bool IsObstacle => _isObstacle;
-        public bool HasEnemy { get; set; }
-        public bool HasPlayer { get; set; }
-        public bool HasBomb { get; set; }
-        public IDamageable Damageable { get; set; }
-        public bool IsFree => HasEnemy == false && HasBomb == false && IsObstacle == false;
+        public Enemy Enemy { get; set; }
+        public Player Player { get; set; }
+        public Bomb Bomb { get; set; }
+        public bool IsFree => Enemy == null && Bomb == null && IsObstacle == false;
         public Vector3 WorldPosition => _worldPosition;
 
         public SpriteRenderer BackgroundRenderer => _backgroundRenderer;
+
+        public IEnumerable<IDamageable> GetAllDamageable()
+        {
+            var result = new List<IDamageable>();
+            
+            if(Player != null)
+                if(Player is IDamageableOwner owner)
+                    result.AddRange(owner.GetAllDamageable());
+
+            return result;
+        }
         
 
         public void Initialize(int x, int y, Vector3 worldPosition)
@@ -76,13 +87,16 @@ namespace Core
         {
             Disable();
 
-            if (HasPlayer)
+            var c1 = Player is null == false;
+            var c2 = Enemy is null == false;
+
+            if (c1)
                 Enable(Color.magenta);
             
-            if(HasEnemy)
+            if(c2)
                 Enable(Color.yellow);
             
-            if(HasEnemy && HasPlayer)
+            if(c1 && c2)
                 Enable(Color.blue);
         }
     }
