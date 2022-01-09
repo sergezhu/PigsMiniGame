@@ -12,27 +12,30 @@ namespace Core
 
         private EnemyMover _enemyMover;
 
-
-        public bool IsAggroActive { get; private set; }
+        public bool IsAggro { get; private set; }
 
         public DistanceProvider DistanceProvider { get; set; }
 
         public void Initialize(EnemyMover enemyMover)
         {
             _enemyMover = enemyMover;
-            IsAggroActive = false;
+            IsAggro = false;
         }
-
 
         public void DoUpdate()
         {
             var distance = DistanceProvider.GetDistanceFromEnemy(_enemyMover);
 
             if (distance <= _startAggroDistance)
-                IsAggroActive = true;
+                IsAggro = true;
             
             if (distance >= _endAggroDistance)
-                IsAggroActive = false;
+                IsAggro = false;
+        }
+        
+        public bool TryGetNearestTarget(out Vector2Int coord)
+        {
+            return DistanceProvider.TryGetNearestTarget(out coord, _enemyMover);
         }
 
         private void OnValidate()

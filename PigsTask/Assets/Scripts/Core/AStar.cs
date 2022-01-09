@@ -59,14 +59,8 @@ namespace Core
             
             _startCell = _grid.GetCell(startCoord);
             _endCell = _grid.GetCell(endCoord);
-            
-            //Debug.Log($"start : {_startCell.Coords.AsVector()} , end : {_endCell.Coords.AsVector()}");
-            
-            _openList = new HashSet<GridCell>();
-            _openList.Add(_startCell);
-
+            _openList = new HashSet<GridCell> {_startCell};
             _closedList = new HashSet<GridCell>();
-            
             _currentCell = _startCell;
             _path = null;
         }
@@ -137,6 +131,14 @@ namespace Core
         
         public GridCell ToCellOrNull(Vector2Int coords) => 
             _grid.GetCell(coords);
+        
+        public List<GridCell> GetFreeNeighbors(Vector2Int parentCoords)
+        {
+            var neighbors = FindNeighbors(parentCoords);
+            neighbors = neighbors.Where(cell => cell.IsFree).ToList();
+
+            return neighbors;
+        }
 
         private List<GridCell> FindNeighbors(Vector2Int parentCoords)
         {

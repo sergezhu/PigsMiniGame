@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Threading.Tasks;
 using Core.Infrastructure.AssetManagement;
+using Core.Interfaces;
 using Core.Move;
 using Core.View;
 using UnityEngine;
@@ -29,6 +30,8 @@ namespace Core
         private EnemyMover _enemyMover;
         [SerializeField]
         private AggroZone _aggroZone;
+        [SerializeField]
+        private DamageDealer _damageDealer;
 
         private DistanceProvider _distanceProvider;
         private MoveController _moveController;
@@ -66,6 +69,7 @@ namespace Core
 
         public void DoUpdate()
         {
+            _aggroZone.DoUpdate();
             HandleState();
         }
 
@@ -123,6 +127,7 @@ namespace Core
                     HandleWalk();
                     break;
                 case EnemyState.Chasing:
+                    HandleChasing();
                     break;
                 case EnemyState.DirtyStun:
                     HandleDirtyStun();
@@ -134,8 +139,21 @@ namespace Core
 
         private void HandleIdle()
         {
-            if(_isStunned)
+            if (_isStunned)
+            {
                 CurrentState = EnemyState.DirtyStun;
+                return;
+            }
+            
+            if (_aggroZone.IsAggro)
+            {
+                CurrentState = EnemyState.Chasing;
+                _enemyMover.StopRelax();
+                
+                TryStartChasingMove();
+                
+                return;
+            }
             
             if (_enemyMover.IsRelaxing)
                 return;
@@ -150,8 +168,19 @@ namespace Core
         {
             if (_isStunned)
             {
-                _enemyMover.Stop();
+                _enemyMover.StopMove();
                 CurrentState = EnemyState.DirtyStun;
+                return;
+            }
+
+            if (_aggroZone.IsAggro)
+            {
+                CurrentState = EnemyState.Chasing;
+                _enemyMover.StopMove();
+                
+                TryStartChasingMove();
+                
+                return;
             }
             
             if (_enemyMover.IsMoving)
@@ -162,7 +191,7 @@ namespace Core
             if (_enemyMover.IsRelaxing)
                 CurrentState = EnemyState.Idle;
         }
-        
+
         private void HandleDirtyStun()
         {
             if (_dirtyStunCoroutine == null)
@@ -173,6 +202,35 @@ namespace Core
                 _dirtyStunCoroutine = null;
                 CurrentState = EnemyState.Walk;
             }
+        }
+
+        private void HandleChasing()
+        {
+            if (_isStunned)
+            {
+                _enemyMover.StopMove();
+                CurrentState = EnemyState.DirtyStun;
+                return;
+            }
+            
+            if (_aggroZone.IsAggro == false)
+            {
+                CurrentState = EnemyState.Idle;
+                _view.EnableDefaultView();
+                _enemyMover.StopMove();
+                _enemyMover.TryStartRelax();
+            }
+            else
+            {
+                _view.EnableAggroView();
+                TryStartChasingMove();
+            }
+        }
+
+        private void TryStartChasingMove()
+        {
+            if (_aggroZone.TryGetNearestTarget(out Vector2Int nearestPosition))
+                _enemyMover.TryStartMove(new CellCoords(nearestPosition));
         }
 
         private IEnumerator DirtyStunCoroutine(float duration)

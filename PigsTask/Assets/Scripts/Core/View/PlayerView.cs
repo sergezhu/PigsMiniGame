@@ -7,18 +7,17 @@ using UnityEngine;
 namespace Core.View
 {
     [RequireComponent(typeof(SpriteRenderer))]
-    public class PlayerView : MonoBehaviour, IDefaultView
+    public class PlayerView : MonoBehaviour, IDefaultView, IDirtyView
     {
-        [SerializeField]
-        private FourDirectionView _defaultView;
-        
-        private FourDirectionView _currentView;
+        private IFourDirectionView _defaultView;
+        private IFourDirectionView _currentView;
         private SpriteRenderer _spriteRenderer;
 
         public async Task Initialize(IAssetProvider assetProvider)
         {
             _spriteRenderer = GetComponent<SpriteRenderer>();
 
+            _defaultView = new FourDirectionView();
             var defaultViewPictures = GetDefaultViewPictures();
             await _defaultView.Initialize(assetProvider, _spriteRenderer, defaultViewPictures[MoveDirection.Left], 
                 defaultViewPictures[MoveDirection.Right], defaultViewPictures[MoveDirection.Up], defaultViewPictures[MoveDirection.Down]);
@@ -26,7 +25,7 @@ namespace Core.View
             _currentView = _defaultView;
             _currentView.SetDirection(MoveDirection.Right);
         }
-        
+
         public Dictionary<MoveDirection, string> GetDefaultViewPictures()
         {
             return new Dictionary<MoveDirection, string>()
@@ -36,6 +35,11 @@ namespace Core.View
                 {MoveDirection.Up, AssetAddress.PlayerDefaultUp},
                 {MoveDirection.Down, AssetAddress.PlayerDefaultDown},
             };
+        }
+
+        public Dictionary<MoveDirection, string> GetDirtyViewPictures()
+        {
+            throw new System.NotImplementedException();
         }
 
         public void EnableDefaultView()

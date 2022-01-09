@@ -24,7 +24,6 @@ namespace Core
         [SerializeField]
         private EarnScoresSettings _earnScoresSettings;
 
-        private AStar _aStarPathFinder;
         private IAssetProvider _assetProvider;
         private InputController _inputController;
 
@@ -35,21 +34,19 @@ namespace Core
         {
             _inputController = new InputController(_rayCaster);
 
-            _aStarPathFinder = new AStar(_grid);
-
             _assetProvider = new AssetProvider();
             _assetProvider.Initialize();
 
             _grid.DisableCells();
             
-            _spawnController.Initialize(_grid, _assetProvider, _aStarPathFinder, _inputController, _earnScoresSettings);
+            _spawnController.Initialize(_grid, _assetProvider, _inputController, _earnScoresSettings);
             await _spawnController.SpawnEnemies();
             await _spawnController.SpawnPlayer();
             _spawnController.LateInitialize();
 
             _isUpdateReady = true;
             
-            _uiController.Initialize(_spawnController.Player, _spawnController.EarnScoresProviders);
+            _uiController.Initialize(_spawnController.Player, _spawnController.EarnScoresProviders, _spawnController.Player.Health);
         }
 
         private void Update()
@@ -61,7 +58,7 @@ namespace Core
             _spawnController.Player.DoUpdate();
             _spawnController.Enemies.ToList().ForEach(e => e.DoUpdate());
 
-            //_grid.UpdateCellsView();
+            _grid.UpdateCellsView();
         }
     }
 }

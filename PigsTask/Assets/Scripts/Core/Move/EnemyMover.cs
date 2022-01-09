@@ -21,6 +21,7 @@ namespace Core.Move
         private float _relaxMaxDuration = 5;
         
         private MoveController _moveController;
+        private Coroutine _relaxCoroutine;
 
         private int WalkDistance => Random.Range(_walkMinDistance, _walkMaxDistance + 1);
         public float RelaxDuration => Random.Range(_relaxMinDuration, _relaxMaxDuration);
@@ -42,17 +43,37 @@ namespace Core.Move
             var desiredDistance = WalkDistance;
             _moveController.Move(desiredDistance, _speed, false);
         }
+        
+        public void TryStartMove(CellCoords coords)
+        {
+            if (IsMoving)
+                return;
+
+            var desiredDistance = WalkDistance;
+            _moveController.Move(coords, desiredDistance, _speed, false);
+        }
 
         public void TryStartRelax()
         {
             if (IsRelaxing)
                 return;
 
-            StartCoroutine(Relax(RelaxDuration));
+            _relaxCoroutine = StartCoroutine(Relax(RelaxDuration));
         }
 
-        public void Stop() => 
+        public void StopMove() => 
             _moveController.Stop();
+        
+        public void StopRelax()
+        {
+            if (_relaxCoroutine == null)
+                return;
+            
+            StopCoroutine(_relaxCoroutine);
+            
+            IsRelaxing = false;
+            _relaxCoroutine = null;
+        }
 
         private IEnumerator Relax(float relaxDuration)
         {
@@ -61,6 +82,7 @@ namespace Core.Move
             yield return new WaitForSeconds(relaxDuration);
             
             IsRelaxing = false;
+            _relaxCoroutine = null;
         }
     }
 }

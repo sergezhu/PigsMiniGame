@@ -1,7 +1,7 @@
 using System;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Scripting;
 using UnityEngine.UI;
 
 namespace UI
@@ -14,17 +14,29 @@ namespace UI
         private TMP_Text _scoresText;
         [SerializeField]
         private Button _bombButton;
+        [SerializeField]
+        private Slider _slider;
+
+        private readonly float _duration = 0.5f;
 
         public void SetScores(int scores)
         {
             _scoresText.text = $"Scores : {scores}";
         }
 
+        public void SetHP(int currentHp, int maxHp)
+        {
+            var currentValue = _slider.value;
+            var targetValue = (float) currentHp / maxHp;
+
+            DOVirtual.Float(currentValue, targetValue, _duration, value => _slider.value = value).SetEase(Ease.OutCubic);
+        }
+
         private void OnEnable()
         {
             Subscribe();
         }
-    
+
         private void OnDisable()
         {
             Unsubscribe();

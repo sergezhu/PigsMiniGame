@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Threading.Tasks;
 using Core.Infrastructure.AssetManagement;
 using Core.InputControl;
+using Core.Interfaces;
 using Core.Move;
 using Core.Spawn;
 using Core.View;
@@ -33,19 +33,23 @@ namespace Core
         private SpawnController _spawnController;
         private Coroutine _dirtyStunCoroutine;
         private AStar _pathFinder;
+        private Health _health;
         
         private bool _isStunned;
 
         public PlayerMover PlayerMover => _playerMover;
         public PlayerState CurrentState { get; private set; }
+        public Health Health => _health;
 
         public async Task Initialize(MoveController moveController, InputController inputController, IAssetProvider assetProvider, 
-            int order, SpawnController spawnController, AStar pathFinder)
+            int order, SpawnController spawnController, AStar pathFinder, Health health)
         {
             _assetProvider = assetProvider;
             _moveController = moveController;
             _inputController = inputController;
             _spawnController = spawnController;
+            _health = health;
+            
             _pathFinder = pathFinder;
 
             await _view.Initialize(assetProvider);

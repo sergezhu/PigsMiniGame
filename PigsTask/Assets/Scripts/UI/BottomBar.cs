@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Core;
+using Core.Interfaces;
 using DG.Tweening;
 using UnityEngine;
 
@@ -15,14 +16,17 @@ namespace UI
         private IEnumerable<IEarnScoresProvider> _spawnControllerEarnScoresProviders;
 
         private int _currentScores;
+        private Health _health;
 
-        public void Initialize(IBombButtonClickHandler bombButtonClickHandler, IEnumerable<IEarnScoresProvider> spawnControllerEarnScoresProviders)
+        public void Initialize(IBombButtonClickHandler bombButtonClickHandler, IEnumerable<IEarnScoresProvider> spawnControllerEarnScoresProviders, Health health)
         {
             _bombButtonClickHandler = bombButtonClickHandler;
             _spawnControllerEarnScoresProviders = spawnControllerEarnScoresProviders;
+            _health = health;
 
             _currentScores = 0;
             _view.SetScores(_currentScores);
+            _view.SetHP(_health.CurrentHP, _health.MaxHP);
 
             Subscribe();
         }
@@ -35,6 +39,7 @@ namespace UI
         private void Subscribe()
         {
             _view.BombButtonClick += OnBombButtonClick;
+            _health.Changed += OnHealthChanged;
             
             _spawnControllerEarnScoresProviders.ToList().ForEach(provider => provider.EarnScoresReady += OnEarnScoresReady);
         }
@@ -42,6 +47,7 @@ namespace UI
         private void Unsubscribe()
         {
             _view.BombButtonClick -= OnBombButtonClick;
+            _health.Changed -= OnHealthChanged;
             
             _spawnControllerEarnScoresProviders.ToList().ForEach(provider => provider.EarnScoresReady -= OnEarnScoresReady);
         }
@@ -54,6 +60,11 @@ namespace UI
                 .SetEase(Ease.OutQuad);
 
             _currentScores = newCurrentScores;
+        }
+
+        private void OnHealthChanged()
+        {
+            _view.SetHP(_health.CurrentHP, _health.MaxHP);
         }
 
         private void OnBombButtonClick()

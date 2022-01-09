@@ -1,3 +1,4 @@
+using Core.Interfaces;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
@@ -42,6 +43,8 @@ namespace Core
         public bool HasEnemy { get; set; }
         public bool HasPlayer { get; set; }
         public bool HasBomb { get; set; }
+        public IDamageable Damageable { get; set; }
+        public bool IsFree => HasEnemy == false && HasBomb == false && IsObstacle == false;
         public Vector3 WorldPosition => _worldPosition;
 
         public SpriteRenderer BackgroundRenderer => _backgroundRenderer;

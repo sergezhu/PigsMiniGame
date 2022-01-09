@@ -14,9 +14,13 @@ namespace Core.Move
 
         private const AStar.AllowedDirectionsType PathFinderMode = AStar.AllowedDirectionsType.FourDirections;
 
-        private CellCoords _startCoords;
-        private MoveDirection _startDirection;
-
+        private readonly AStar _pathFinder;
+        private readonly Transform _targetTransform;
+        private readonly EntitySpawner.EntityType _spawnerType;
+        private Dictionary<MoveDirection, Vector2Int> _directionsVectors;
+        private Sequence _sequence;
+        private bool _needStopFlag;
+        
         public MoveDirection CurrentDirection { get; private set; }
         public CellCoords CurrentPosition { get; private set; }
         public CellCoords PreviousPosition { get; private set; }
@@ -25,13 +29,7 @@ namespace Core.Move
         public GridCell PreviousCell => _pathFinder.ToCell(PreviousPosition.AsVector());
 
 
-        private Dictionary<MoveDirection, Vector2Int> _directionsVectors;
-        private AStar _pathFinder;
-        private Transform _targetTransform;
-        private EntitySpawner.EntityType _spawnerType;
-        private Sequence _sequence;
-
-        private static Dictionary<EntitySpawner.EntityType, MoveEntityCallbacks> _cellMoveCallbacks =
+        private static readonly Dictionary<EntitySpawner.EntityType, MoveEntityCallbacks> CellMoveCallbacks =
             new Dictionary<EntitySpawner.EntityType, MoveEntityCallbacks>
             {
                 {
@@ -61,12 +59,10 @@ namespace Core.Move
         {
             _pathFinder = pathFinder;
 
-            _startDirection = startDirection;
-            _startCoords = startCoords;
             _targetTransform = targetTransform;
             _spawnerType = spawnerType;
 
-            CurrentDirection = _startDirection;
+            CurrentDirection = startDirection;
             CurrentPosition = startCoords;
             PreviousPosition = startCoords;
 
@@ -84,6 +80,17 @@ namespace Core.Move
 
             MoveAlongPath(path, speed);
         }
+        
+        public void Move(CellCoords targetCoords, int distance, float speed, bool trackPath)
+        {
+            var path = GetPath(targetCoords);
+            var cutPath = path.Count <= distance ? path : path.GetRange(0, distance);
+
+            if (trackPath)
+                TrackPath(cutPath);
+
+            MoveAlongPath(cutPath, speed);
+        }
 
         public void Move(int distance, float speed, bool trackPath)
         {
@@ -99,11 +106,8 @@ namespace Core.Move
         {
             if (_sequence == null)
                 return;
-            
-            _sequence.Kill();
-            _sequence = null;
 
-            IsMoving = false;
+            _needStopFlag = true;
         }
 
         public GridCell GetNearCellWithPriorityFront()
@@ -112,7 +116,7 @@ namespace Core.Move
             var cell = _pathFinder.ToCellOrNull(priorityPosition);
 
             if (cell != null)
-                if (IsFree(cell))
+                if (cell.IsFree)
                     return cell;
 
             var freeCells = new List<GridCell>();
@@ -126,7 +130,7 @@ namespace Core.Move
                 cell = _pathFinder.ToCellOrNull(position);
 
                 if (cell != null)
-                    if (IsFree(cell))
+                    if (cell.IsFree)
                         freeCells.Add(cell);
             }
 
@@ -144,8 +148,6 @@ namespace Core.Move
             cells.ForEach(c => c.AnimateMarker());
         }
 
-        private bool IsFree(GridCell cell) =>
-            cell.HasEnemy == false && cell.HasBomb == false && cell.IsObstacle == false;
 
         private void InitializeDirectionsVectors()
         {
@@ -202,7 +204,7 @@ namespace Core.Move
                     if (index == -1)
                         throw new InvalidOperationException("Direction vector not found!");
 
-                    if (_cellMoveCallbacks[_spawnerType].CheckCellIfStopFunc(newCell))
+                    if (CellMoveCallbacks[_spawnerType].CheckCellIfStopFunc(newCell))
                     {
                         //Debug.Log(" ! next cell is busy ! Path interrupted. Enemy is waiting next try to walk");
                         _sequence.Kill();
@@ -212,7 +214,7 @@ namespace Core.Move
                     }
                     else
                     {
-                        _cellMoveCallbacks[_spawnerType].CellMarkAction(newCell);
+                        CellMoveCallbacks[_spawnerType].CellMarkAction(newCell);
 
                         CurrentDirection = _directionsVectors.Keys.ToList()[index];
                         Changed?.Invoke();
@@ -222,11 +224,13 @@ namespace Core.Move
                 _sequence.Append(_targetTransform.DOMove(worldPath[i], 1f / speed).SetEase(easing));
                 _sequence.AppendCallback(() =>
                 {
-                    _cellMoveCallbacks[_spawnerType].CellUnmarkAction(previousCell);
+                    CellMoveCallbacks[_spawnerType].CellUnmarkAction(previousCell);
 
                     PreviousPosition = CurrentPosition;
                     CurrentPosition = newCoords;
                     Changed?.Invoke();
+
+                    TryStopStopInternal();
                 });
             }
 
@@ -235,6 +239,18 @@ namespace Core.Move
                 _sequence = null;
                 IsMoving = false;
             });
+        }
+
+        private void TryStopStopInternal()
+        {
+            if (_needStopFlag == false)
+                return;
+            
+            _sequence.Kill();
+            _sequence = null;
+            _needStopFlag = false;
+
+            IsMoving = false;
         }
 
         private static Ease GetEasing(int i, int count)

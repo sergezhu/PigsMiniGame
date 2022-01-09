@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Core
+namespace Core.Interfaces
 {
     public interface IEarnScoresProvider
     {

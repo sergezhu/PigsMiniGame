@@ -10,15 +10,6 @@ namespace Core.View
     [Serializable]
     public class FourDirectionView : IFourDirectionView
     {
-        [SerializeField]
-        private Sprite _leftDirectionPicture;
-        [SerializeField]
-        private Sprite _rightDirectionPicture;
-        [SerializeField]
-        private Sprite _upDirectionPicture;
-        [SerializeField]
-        private Sprite _downDirectionPicture;
-
         private Dictionary<MoveDirection, Sprite> _directionPictures;
         private SpriteRenderer _spriteRenderer;
 

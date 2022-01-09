@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5109500521344745108}
   - component: {fileID: -2267744250139256628}
   - component: {fileID: 6616996778078448326}
+  - component: {fileID: -2286391215660204445}
   m_Layer: 0
   m_Name: Dog
   m_TagString: Untagged
@@ -101,6 +102,7 @@ MonoBehaviour:
   _view: {fileID: 5109500521344745108}
   _enemyMover: {fileID: -2267744250139256628}
   _aggroZone: {fileID: 6616996778078448326}
+  _damageDealer: {fileID: -2286391215660204445}
 --- !u!114 &5109500521344745108
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -113,21 +115,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d4122f83c5341b7b034055715de5cb3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _defaultView:
-    _leftDirectionPicture: {fileID: 0}
-    _rightDirectionPicture: {fileID: 0}
-    _upDirectionPicture: {fileID: 0}
-    _downDirectionPicture: {fileID: 0}
-  _aggroView:
-    _leftDirectionPicture: {fileID: 0}
-    _rightDirectionPicture: {fileID: 0}
-    _upDirectionPicture: {fileID: 0}
-    _downDirectionPicture: {fileID: 0}
-  _dirtyView:
-    _leftDirectionPicture: {fileID: 0}
-    _rightDirectionPicture: {fileID: 0}
-    _upDirectionPicture: {fileID: 0}
-    _downDirectionPicture: {fileID: 0}
 --- !u!114 &-2267744250139256628
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -140,6 +127,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 019caa6a3c764860957fdbbbf0bea6a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _speed: 2
+  _walkMinDistance: 1
+  _walkMaxDistance: 6
+  _relaxMinDuration: 0.5
+  _relaxMaxDuration: 5
 --- !u!114 &6616996778078448326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -154,3 +146,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _startAggroDistance: 3
   _endAggroDistance: 5
+--- !u!114 &-2286391215660204445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51314810066663840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2292481440ff41709b52de56f8e2be42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _amount: 1
+  _duration: 0.75

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Core.Infrastructure.AssetManagement;
 using Core.InputControl;
+using Core.Interfaces;
 using Core.Move;
 using Core.SO;
 using Core.View;
@@ -26,7 +27,6 @@ namespace Core.Spawn
         private List<IEarnScoresProvider> _earnScoresProviders;
         private IAssetProvider _assetProvider;
         private InputController _inputController;
-        private AStar _pathFinder;
         private EarnScoresSettings _earnScoresSettings;
 
         public Player Player => _player;
@@ -34,12 +34,11 @@ namespace Core.Spawn
         public IEnumerable<IExplosionHandler> ExplosionHandlers => _explosionHandlers;
         public IEnumerable<IEarnScoresProvider> EarnScoresProviders => _earnScoresProviders;
 
-        public void Initialize(Grid grid, IAssetProvider assetProvider, AStar pathFinder, InputController inputController, EarnScoresSettings earnScoresSettings)
+        public void Initialize(Grid grid, IAssetProvider assetProvider, InputController inputController, EarnScoresSettings earnScoresSettings)
         {
             _grid = grid;
             _inputController = inputController;
             _assetProvider = assetProvider;
-            _pathFinder = pathFinder;
             _earnScoresSettings = earnScoresSettings;
 
             _explosionHandlers = new List<IExplosionHandler>();
@@ -66,9 +65,10 @@ namespace Core.Spawn
                 await spawnTask;
                 var enemy = spawnTask.Result.GetComponent<Enemy>();
 
-                var moveController = new MoveController(record.Cell.Coords, GetRandomDirection(), enemy.transform, _pathFinder, record.Spawner.Type);
+                var pathFinder = new AStar(_grid);
+                var moveController = new MoveController(record.Cell.Coords, GetRandomDirection(), enemy.transform, pathFinder, record.Spawner.Type);
                 var scores = _earnScoresSettings.EntityTypeScores.First(settings => settings.EntityType == record.Spawner.Type).EarnScores;
-                await enemy.Initialize(moveController, _assetProvider, _pathFinder, scores);
+                await enemy.Initialize(moveController, _assetProvider, pathFinder, scores);
                 
                 _enemies.Add(enemy);
                 
@@ -99,8 +99,9 @@ namespace Core.Spawn
             await spawnTask;
 
             var player = spawnTask.Result.GetComponent<Player>();
-            var moveController = new MoveController(spawnCellRecord.Cell.Coords, MoveDirection.Right, player.transform, _pathFinder, spawnCellRecord.Spawner.Type);
-            await player.Initialize(moveController, _inputController, _assetProvider, spawnCellRecord.Cell.Y + 1, this, _pathFinder);
+            var pathFinder = new AStar(_grid);
+            var moveController = new MoveController(spawnCellRecord.Cell.Coords, MoveDirection.Right, player.transform, pathFinder, spawnCellRecord.Spawner.Type);
+            await player.Initialize(moveController, _inputController, _assetProvider, spawnCellRecord.Cell.Y + 1, this, pathFinder, new Health(10));
 
             _player = player;
             
@@ -117,7 +118,8 @@ namespace Core.Spawn
             await spawnTask;
 
             var bomb = spawnTask.Result.GetComponent<Bomb>();
-            bomb.Initialize(targetBombCell, _pathFinder);
+            var pathFinder = new AStar(_grid);
+            bomb.Initialize(targetBombCell, pathFinder);
 
             SubscribeOnExplosionEvent(bomb);
             
@@ -138,7 +140,11 @@ namespace Core.Spawn
 
         public void LateInitialize()
         {
-            _enemies.ForEach(e => e.CreateDistanceProvider(_pathFinder, _player.PlayerMover));
+            _enemies.ForEach(e =>
+            {
+                var pathFinder = new AStar(_grid);
+                e.CreateDistanceProvider(pathFinder, _player.PlayerMover);
+            });
         }
 
         private void FillSpawnRecords()

@@ -1,4 +1,6 @@
-﻿using Core.Move;
+﻿using System.Linq;
+using Core.Move;
+using UnityEngine;
 
 namespace Core
 {
@@ -6,6 +8,8 @@ namespace Core
     {
         private readonly AStar _pathFinder;
         private readonly PlayerMover _playerMover;
+
+        public GridCell NearestTarget => _pathFinder.ToCell(_playerMover.CurrentPosition);
 
         public DistanceProvider(AStar pathFinder, PlayerMover playerMover)
         {
@@ -19,6 +23,30 @@ namespace Core
             var path = _pathFinder.GetPath();
 
             return path.Count;
+        }
+        
+        public bool TryGetNearestTarget(out Vector2Int coord, EnemyMover enemyMover)
+        {
+            var playerPosition =  _playerMover.CurrentPosition;
+
+            var nearFreePositions = _pathFinder
+                .GetFreeNeighbors(playerPosition)
+                .Select(cell => cell.Coords.AsVector())
+                .ToList();
+
+            if (nearFreePositions.Count == 0)
+            {
+                coord = default;
+                return false;
+            }
+
+            coord = nearFreePositions.OrderBy(pos =>
+            {
+                _pathFinder.Initialize(pos, enemyMover.CurrentPosition, AStar.AllowedDirectionsType.FourDirections);
+                return _pathFinder.GetPath().Count;
+            }).First();
+
+            return true;
         }
     }
 }
