@@ -104,7 +104,7 @@ namespace Core
 
         public void HandleExplosion(GridCell cell, int distance)
         {
-            _pathFinder.Initialize(cell.Coords.AsVector(), _moveController.CurrentPosition.AsVector(), AStar.AllowedDirectionsType.EightDirections);
+            _pathFinder.Initialize(cell.Coords, _moveController.CurrentPosition, AStar.AllowedDirectionsType.EightDirections);
             var distanceBetweenCells = _pathFinder.GetPath().Count;
 
             if (distanceBetweenCells < distance)
@@ -128,7 +128,7 @@ namespace Core
 
         private void OnMoveChanged()
         {
-            UpdateView(_moveController.CurrentDirection, _moveController.CurrentPosition.Y + 1);
+            UpdateView(_moveController.CurrentDirection, _moveController.CurrentPosition.y + 1);
         }
         
         private void OnHealthChanged()
@@ -210,7 +210,6 @@ namespace Core
         private IEnumerator DirtyStunCoroutine(float duration)
         {
             _view.EnableDirtyView();
-            Debug.Log("Player under explosion effect");
             
             yield return new WaitForSeconds(duration);
             

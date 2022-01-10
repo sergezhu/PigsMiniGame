@@ -42,7 +42,7 @@ namespace Core
             if (_timerInterrupted)
                 return;
 
-            _pathFinder.Initialize(cell.Coords.AsVector(), _cell.Coords.AsVector(), AStar.AllowedDirectionsType.EightDirections);
+            _pathFinder.Initialize(cell.Coords, _cell.Coords, AStar.AllowedDirectionsType.EightDirections);
             var distanceBetweenCells = _pathFinder.GetPath().Count;
 
             if (distanceBetweenCells < distance)
@@ -56,8 +56,6 @@ namespace Core
 
             _timerInterrupted = true;
             _timerCoroutine = StartCoroutine(RunTimer(_lifeTimeAfterInterrupted));
-            
-            Debug.Log("Other Bomb under explosion effect");
         }
 
         private void RunTimer()
@@ -94,7 +92,7 @@ namespace Core
 
         private void InstantiateExplosionPrefab()
         {
-            Debug.Log("Explosion! Here must be implementation of spawn Explosion particles");
+            //Debug.Log("Explosion! Here must be implementation of spawn Explosion particles");
         }
     }
 }

@@ -27,13 +27,13 @@ namespace Core
         private PathMarker _pathMarker;
         [SerializeField]
         private SpriteRenderer _backgroundRenderer;
-        
+        [SerializeField]
+        private Vector2Int _coords;
 
         public int X => _x;
         public int Y => _y;
 
-        public CellCoords Coords =>
-            new CellCoords(_x, _y);
+        public Vector2Int Coords => _coords;
         
         public GridCell Parent { get; set; }
         public int G { get; set; }
@@ -59,12 +59,12 @@ namespace Core
 
             return result;
         }
-        
 
         public void Initialize(int x, int y, Vector3 worldPosition)
         {
             _x = x;
             _y = y;
+            _coords = new Vector2Int(_x, _y);
             _worldPosition = worldPosition;
         }
 

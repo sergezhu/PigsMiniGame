@@ -7,17 +7,17 @@ namespace Core
     public class CellData
     {
         [SerializeField]
-        private CellCoords _coords;
+        private Vector2Int _coords;
         [SerializeField]
         private GridCell _cell;
 
-        public CellData(CellCoords coords, GridCell cell)
+        public CellData(Vector2Int coords, GridCell cell)
         {
             _coords = coords;
             _cell = cell;
         }
 
-        public CellCoords Coords => _coords;
+        public Vector2Int Coords => _coords;
         public GridCell Cell => _cell;
     }
 }

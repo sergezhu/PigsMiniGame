@@ -13,6 +13,8 @@ namespace Core
         [SerializeField]
         private int _sizeY;
 
+        private GridCell[,] _cellsArray;
+
         public IEnumerable<CellData> Cells => _cells;
         public int SizeX => _sizeX;
         public int SizeY => _sizeY;
@@ -24,10 +26,18 @@ namespace Core
             _cells = cells.ToList();
         }
 
+        public void InitializeArray()
+        {
+            _cellsArray = new GridCell[_sizeX, _sizeY];
+            _cells.ForEach(data => _cellsArray[data.Coords.x, data.Coords.y] = data.Cell);
+        }
+
         public GridCell GetCell(Vector2Int coords)
         {
-            var firstData = Cells.FirstOrDefault(data => data.Coords.X == coords.x && data.Coords.Y == coords.y);
-            return firstData?.Cell;
+            if (coords.x < 0 || coords.x >= _sizeX || coords.y < 0 || coords.y >= _sizeY)
+                return null;
+            
+            return _cellsArray[coords.x, coords.y];
         }
 
         public void ClearCells() => _cells.Clear();

@@ -36,7 +36,7 @@ namespace Core.Spawn
                 //var obstacle = _assetProvider.Instantiate(AssetAddress.StonePrefab, obstaclePosition, _obstaclesParent);
                 var obstacle = Instantiate(_obstaclePrefab, obstaclePosition, Quaternion.identity, _obstaclesParent);
                 var obstacleRenderer = obstacle.GetComponent<SpriteRenderer>();
-                obstacleRenderer.sortingOrder = cell.Coords.Y + 1;
+                obstacleRenderer.sortingOrder = cell.Coords.y + 1;
             }
         }
     }

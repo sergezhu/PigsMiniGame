@@ -10,7 +10,7 @@ namespace Core.Move
         private MoveController _moveController;
         private GridCell _targetCell;
 
-        public Vector2Int CurrentPosition => _moveController.CurrentPosition.AsVector();
+        public Vector2Int CurrentPosition => _moveController.CurrentPosition;
         public bool IsMoving => _moveController.IsMoving;
         public bool IsEnabled { get; private set; }
 
@@ -28,6 +28,8 @@ namespace Core.Move
 
         public void HandleCellClick(GridCell cell)
         {
+            Debug.Log($"cell click {cell.Coords}");
+            
             _targetCell = cell;
             TryStartMove();
         }

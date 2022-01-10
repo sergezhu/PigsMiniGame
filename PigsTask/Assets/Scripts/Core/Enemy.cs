@@ -53,10 +53,9 @@ namespace Core
             _earnScores = earnScores;
 
             await _view.Initialize(assetProvider);
-            UpdateView(moveController.CurrentDirection, moveController.CurrentPosition.Y + 1);
+            UpdateView(moveController.CurrentDirection, moveController.CurrentPosition.y + 1);
 
             _enemyMover.Initialize(moveController);
-            _aggroZone.Initialize(_enemyMover);
 
             CurrentState = EnemyState.Idle;
             
@@ -74,15 +73,19 @@ namespace Core
             _damageDealer.Initialize(damageables);
         }
 
+        public void AggroZoneInitialize()
+        {
+            _aggroZone.Initialize(_enemyMover);
+        }
+
         public void DoUpdate()
         {
-            _aggroZone.DoUpdate();
             HandleState();
         }
 
         public void HandleExplosion(GridCell cell, int distance)
         {
-            _pathFinder.Initialize(cell.Coords.AsVector(), _moveController.CurrentPosition.AsVector(), AStar.AllowedDirectionsType.EightDirections);
+            _pathFinder.Initialize(cell.Coords, _moveController.CurrentPosition, AStar.AllowedDirectionsType.EightDirections);
             var distanceBetweenCells = _pathFinder.GetPath().Count;
 
             if (distanceBetweenCells < distance)
@@ -91,10 +94,9 @@ namespace Core
         
         private void HandleExplosionInternal()
         {
-            EarnScoresReady?.Invoke(_earnScores);
-
             _isStunned = true;
-            Debug.Log("Enemy under explosion effect");
+            
+            EarnScoresReady?.Invoke(_earnScores);
         }
 
         private void OnDestroy()
@@ -114,7 +116,7 @@ namespace Core
 
         private void OnMoveChanged()
         {
-            UpdateView(_moveController.CurrentDirection, _moveController.CurrentPosition.Y + 1);
+            UpdateView(_moveController.CurrentDirection, _moveController.CurrentPosition.y + 1);
         }
 
         private void UpdateView(MoveDirection moveDirection, int order)
@@ -264,7 +266,7 @@ namespace Core
         private void TryStartChasingMove()
         {
             if (_aggroZone.TryGetNearestTarget(out Vector2Int nearestPosition))
-                _enemyMover.TryStartMove(new CellCoords(nearestPosition));
+                _enemyMover.TryStartMove(nearestPosition);
         }
 
         private IEnumerator DirtyStunCoroutine(float duration)

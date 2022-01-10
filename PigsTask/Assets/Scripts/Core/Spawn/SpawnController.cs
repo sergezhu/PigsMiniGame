@@ -162,6 +162,7 @@ namespace Core.Spawn
                 var pathFinder = new AStar(_grid);
                 e.CreateDistanceProvider(pathFinder, _player.PlayerMover);
                 e.DamageDealerInitialize(new List<IDamageable>(){_player.Health});
+                e.AggroZoneInitialize();
             });
         }
 

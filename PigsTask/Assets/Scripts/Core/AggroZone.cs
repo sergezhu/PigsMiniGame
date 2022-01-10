@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Core.Interfaces;
 using Core.Move;
@@ -9,6 +10,8 @@ namespace Core
     public class AggroZone : MonoBehaviour
     {
         private const float AttackDistance = 2; // its minimal value for attack opportunity
+        private const float UpdateTickIntervalMin = 0.3f; 
+        private const float UpdateTickIntervalMax = 0.5f; 
         
         [SerializeField][Min(1)]
         private int _startAggroDistance;
@@ -17,6 +20,8 @@ namespace Core
 
         private EnemyMover _enemyMover;
         private List<IDamageable> _damageableInRange;
+        private WaitForSeconds _waitForSeconds;
+        private bool _isEnabled;
 
         public bool IsAggro { get; private set; }
         public bool CanAttack { get; private set; }
@@ -28,10 +33,25 @@ namespace Core
         public void Initialize(EnemyMover enemyMover)
         {
             _enemyMover = enemyMover;
+            
             IsAggro = false;
+            
+            _waitForSeconds = new WaitForSeconds(Random.Range(UpdateTickIntervalMin, UpdateTickIntervalMax));
+            _isEnabled = true;
+
+            StartCoroutine(Ticker());
         }
 
-        public void DoUpdate()
+        private IEnumerator Ticker()
+        {
+            while (_isEnabled)
+            {
+                UpdateState();
+                yield return _waitForSeconds;
+            }
+        }
+
+        private void UpdateState()
         {
             var distance = DistanceProvider.GetDistanceFromEnemy(_enemyMover);
 

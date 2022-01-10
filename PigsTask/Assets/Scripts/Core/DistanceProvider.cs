@@ -32,7 +32,7 @@ namespace Core
 
             var nearFreePositions = _pathFinder
                 .GetFreeNeighbors(playerPosition)
-                .Select(cell => cell.Coords.AsVector())
+                .Select(cell => cell.Coords)
                 .ToList();
 
             if (nearFreePositions.Count == 0)

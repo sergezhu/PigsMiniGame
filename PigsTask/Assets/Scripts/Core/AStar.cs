@@ -72,7 +72,7 @@ namespace Core
 
             while (_openList.Count > 0 && _path == null)
             {
-                var neighbors = FindNeighbors(_currentCell.Coords.AsVector());
+                var neighbors = FindNeighbors(_currentCell.Coords);
                 HandleNeighbors(neighbors, _currentCell);
                 HandleCurrent(_currentCell);
 
@@ -88,7 +88,7 @@ namespace Core
                 .Cells
                 .Select(data => data.Cell)
                 .ToList()
-                .Where(c => c.Coords.AsVector() != current)
+                .Where(c => c.Coords != current)
                 .ToList();
 
             if (ignoreObstacles)
@@ -98,7 +98,7 @@ namespace Core
 
             var rndIndex = Random.Range(0, cells.Count);
 
-            return cells[rndIndex].Coords.AsVector();
+            return cells[rndIndex].Coords;
         }
 
         public List<Vector3> ToWorldPath(List<Vector2Int> path)
@@ -166,7 +166,7 @@ namespace Core
         {
             foreach (var neighbor in neighbors)
             {
-                var gScore = DetermineGScore(neighbor.Coords.AsVector(), current.Coords.AsVector());
+                var gScore = DetermineGScore(neighbor.Coords, current.Coords);
                 
                 if(IsAllowPassDiagonally(current, neighbor) == false)
                     continue;
@@ -219,23 +219,23 @@ namespace Core
         {
             neighbor.Parent = parent;
             neighbor.G = parent.G + cost;
-            neighbor.H = DetermineHScore(neighbor.Coords.AsVector(), _endCell.Coords.AsVector());
+            neighbor.H = DetermineHScore(neighbor.Coords, _endCell.Coords);
             neighbor.F = neighbor.G + neighbor.H;
         }
 
         private Stack<Vector2Int> TryCreatePath(GridCell current)
         {
-            if (current.Coords.AsVector() == _endCell.Coords.AsVector())
+            if (current.Coords == _endCell.Coords)
             {
                 var finalPath = new Stack<Vector2Int>();
 
-                while (current.Coords.AsVector() != _startCell.Coords.AsVector())
+                while (current.Coords != _startCell.Coords)
                 {
-                    finalPath.Push(current.Coords.AsVector());
+                    finalPath.Push(current.Coords);
                     current = current.Parent;
                 }
 
-                finalPath.Push(current.Coords.AsVector());
+                finalPath.Push(current.Coords);
                 return finalPath;
             }
 
@@ -244,9 +244,9 @@ namespace Core
 
         private bool IsAllowPassDiagonally(GridCell parent, GridCell neighbor)
         {
-            var direction = parent.Coords.AsVector() - neighbor.Coords.AsVector();
-            var first = new Vector2Int(parent.Coords.AsVector().x - direction.x, parent.Coords.Y);
-            var second = new Vector2Int(parent.Coords.AsVector().x , parent.Coords.Y - direction.y);
+            var direction = parent.Coords - neighbor.Coords;
+            var first = new Vector2Int(parent.Coords.x - direction.x, parent.Coords.y);
+            var second = new Vector2Int(parent.Coords.x , parent.Coords.y - direction.y);
 
             return _grid.GetCell(first).IsObstacle == false && _grid.GetCell(second).IsObstacle == false;
         }

@@ -26,7 +26,7 @@ namespace Core.Move
         private int WalkDistance => Random.Range(_walkMinDistance, _walkMaxDistance + 1);
         public float RelaxDuration => Random.Range(_relaxMinDuration, _relaxMaxDuration);
         
-        public Vector2Int CurrentPosition => _moveController.CurrentPosition.AsVector();
+        public Vector2Int CurrentPosition => _moveController.CurrentPosition;
         public bool IsMoving => _moveController.IsMoving;
         public bool IsRelaxing { get; private set; }
 
@@ -44,7 +44,7 @@ namespace Core.Move
             _moveController.Move(desiredDistance, _speed, false);
         }
         
-        public void TryStartMove(CellCoords coords)
+        public void TryStartMove(Vector2Int coords)
         {
             if (IsMoving)
                 return;

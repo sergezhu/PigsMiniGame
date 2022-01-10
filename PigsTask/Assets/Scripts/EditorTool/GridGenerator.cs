@@ -55,7 +55,7 @@ public class GridGenerator : MonoBehaviour
     {
         _grid.Cells.ToList().ForEach(data =>
         {
-            if((data.Coords.X % 2) != 0 && (data.Coords.Y % 2) != 0)
+            if((data.Coords.x % 2) != 0 && (data.Coords.y % 2) != 0)
                 data.Cell.SetAsObstacle();
             else
                 data.Cell.SetAsDefault();
@@ -76,12 +76,12 @@ public class GridGenerator : MonoBehaviour
         
         for (int i = 0; i < cells.Count; i++)
         {
-            var row = cells[i].Coords.Y;
+            var row = cells[i].Coords.y;
             
             var leftBound = Vector3.Lerp(_leftTopCorner.position, _leftBottomCorner.position, (float) row / (_sizeY - 1));
             var rightBound = Vector3.Lerp(_rightTopCorner.position, _rightBottomCorner.position, (float) row / (_sizeY - 1));
 
-            var col = cells[i].Coords.X;
+            var col = cells[i].Coords.x;
             
             var cellWorldCoord = Vector3.Lerp(leftBound, rightBound, (float) col / (_sizeX - 1));
             cells[i].Cell.Initialize(col, row, cellWorldCoord);
@@ -110,8 +110,8 @@ public class GridGenerator : MonoBehaviour
                 var cell = CreateCell(cellWorldCoord);
                 cell.Initialize(col, row, cellWorldCoord);
 
-                var cellCoords = new CellCoords(col, row);
-                cells.Add(new CellData(cellCoords, cell));
+                var coords = new Vector2Int(col, row);
+                cells.Add(new CellData(coords, cell));
             }
         }
         
@@ -120,7 +120,6 @@ public class GridGenerator : MonoBehaviour
 
     private GridCell CreateCell(Vector3 position)
     {
-        Debug.Log($"{_gridCellPrefab == null}  {_cellsContainer == null}");
         var cell = Instantiate(_gridCellPrefab, _cellsContainer);
         var cellTransform = cell.transform;
         cellTransform.position = position;

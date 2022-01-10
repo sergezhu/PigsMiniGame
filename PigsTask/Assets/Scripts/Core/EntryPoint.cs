@@ -33,6 +33,7 @@ namespace Core
         private async void Awake()
         {
             _inputController = new InputController(_rayCaster);
+            _grid.InitializeArray();
 
             _assetProvider = new AssetProvider();
             _assetProvider.Initialize();
